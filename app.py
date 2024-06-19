@@ -90,15 +90,11 @@ def plot():
     df = pd.read_sql_table('health_data', con=db.engine)
 
     # Exclude 'gender' column from histograms
-    fig_histograms = make_subplots(rows=3, cols=3, subplot_titles=("RBC", "WBC", "HCT", "Platelets", "MCV", "MCH", "MCHC", "AST", "ALT"))
+    fig_histograms = make_subplots(rows=1, cols=3, subplot_titles=("Hemoglobin", "Height", "Weight"))
 
-    # Group columns by similar numerical values and create histograms
-    columns_to_plot = ['rbc', 'wbc', 'hct', 'platelets', 'mcv', 'mch', 'mchc', 'ast', 'alt']
-    for i, col in enumerate(columns_to_plot):
-        row = i // 3 + 1
-        col = i % 3 + 1
-        if col in df.columns:  # Check if the column exists in the DataFrame
-            fig_histograms.add_trace(go.Histogram(x=df[col], name=col.capitalize()), row=row, col=col)
+    fig_histograms.add_trace(go.Histogram(x=df['hemoglobin'], name="Hemoglobin"), row=1, col=1)
+    fig_histograms.add_trace(go.Histogram(x=df['height'], name="Height"), row=1, col=2)
+    fig_histograms.add_trace(go.Histogram(x=df['weight'], name="Weight"), row=1, col=3)
 
     fig_histograms.update_layout(
         title_text='Health Data Histograms',
@@ -133,11 +129,11 @@ def plot():
         )
     )
 
-    # Convert Plotly figures to div strings
-    div_histograms = fig_histograms.to_html(full_html=False)
-    div_3d_plot = fig_3d.to_html(full_html=False)
+    # Convert figures to HTML strings
+    html_histograms = fig_histograms.to_html(full_html=False)
+    html_3d_plot = fig_3d.to_html(full_html=False)
 
-    # Combine Plotly divs into a single HTML content
+    # Combine HTML content
     html_content = f"""
         <!DOCTYPE html>
         <html lang="en">
@@ -145,16 +141,15 @@ def plot():
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Health Data Analysis</title>
-            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         </head>
         <body>
             <div>
                 <h1>Health Data Histograms</h1>
-                {div_histograms}
+                {html_histograms}
             </div>
             <div>
                 <h1>BMI, Height, and Weight Analysis</h1>
-                {div_3d_plot}
+                {html_3d_plot}
             </div>
         </body>
         </html>
