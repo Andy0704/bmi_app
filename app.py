@@ -50,12 +50,17 @@ class HealthData(db.Model):
 # Create tables based on the defined model
 db.create_all()
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+if request.method == 'POST':
+        height = float(request.form['height'])
+        weight = float(request.form['weight'])
+        bmi = weight / (height / 100) ** 2  # 计算 BMI
+        record = BMIRecord(height=height, weight=weight, bmi=bmi)
+        db.session.add(record)
+        db.session.commit()
+        return redirect(url_for('index'))
 
-@app.route('/save', methods=['POST'])
-def save_data():
+@app.route('/', methods=['POST'])
+def index():
     data = request.json
     new_data = HealthData(
         gender=data['gender'], height=data['height'], weight=data['weight'],
@@ -71,6 +76,25 @@ def save_data():
     db.session.add(new_data)
     db.session.commit()
     return jsonify({"message": "Data saved successfully"}), 200
+    return render_template('index.html')
+
+#@app.route('/save', methods=['POST'])
+#def save_data():
+    #data = request.json
+    #new_data = HealthData(
+        #gender=data['gender'], height=data['height'], weight=data['weight'],
+        #hemoglobin=data['hemoglobin'], rbc=data['rbc'], wbc=data['wbc'],
+        #hct=data['hct'], platelets=data['platelets'], mcv=data['mcv'],
+        #mch=data['mch'], mchc=data['mchc'], ast=data['ast'], alt=data['alt'],
+        #bun=data['bun'], creatinine=data['creatinine'], cholesterol=data['cholesterol'],
+        #triglycerides=data['triglycerides'], glucose=data['glucose'],
+        #neutrophils=data['neutrophils'], lymphocytes=data['lymphocytes'],
+        #monocytes=data['monocytes'], eosinophils=data['eosinophils'],
+        #basophils=data['basophils'], bmi=data['bmi']
+    #)
+    #db.session.add(new_data)
+    #db.session.commit()
+    #return jsonify({"message": "Data saved successfully"}), 200
 
 @app.route('/plot')
 def plot():
