@@ -89,19 +89,19 @@ def save_data():
 
 @app.route('/plot')
 def plot():
-    # Read data from database
+    # 从数据库读取数据
     df = pd.read_sql_query('SELECT * FROM health_data', con=db.engine)
 
-    # Generate charts
+    # 生成图表
     fig = px.histogram(df, x='bmi', title='BMI Distribution')
     fig2 = px.scatter(df, x='height', y='weight', color='gender', title='Height vs Weight')
 
-    # Convert charts to HTML
+    # 将图表转换为HTML
     def fig_to_html(fig):
         buffer = BytesIO()
         fig.write_html(buffer, full_html=False)
-        html_bytes = buffer.getvalue()
-        return html_bytes.decode('utf8')
+        html_str = buffer.getvalue().decode('utf8')
+        return html_str
 
     bmi_chart_html = fig_to_html(fig)
     height_weight_chart_html = fig_to_html(fig2)
