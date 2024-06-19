@@ -82,10 +82,10 @@ def save_data():
         neutrophils=data['neutrophils'], lymphocytes=data['lymphocytes'],
         monocytes=data['monocytes'], eosinophils=data['eosinophils'],
         basophils=data['basophils'], bmi=data['bmi']
-        )
-        db.session.add(new_data)
-        db.session.commit()
-        return jsonify({"message": "Data saved successfully"}), 200
+    )
+    db.session.add(new_data)
+    db.session.commit()
+    return jsonify({"message": "Data saved successfully"}), 200
 
 @app.route('/plot')
 def plot():
