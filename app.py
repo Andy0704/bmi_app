@@ -97,7 +97,8 @@ def plot():
     for i, col in enumerate(columns_to_plot):
         row = i // 3 + 1
         col = i % 3 + 1
-        fig_histograms.add_trace(go.Histogram(x=df[col], name=col.capitalize()), row=row, col=col)
+        if col in df.columns:  # Check if the column exists in the DataFrame
+            fig_histograms.add_trace(go.Histogram(x=df[col], name=col.capitalize()), row=row, col=col)
 
     fig_histograms.update_layout(
         title_text='Health Data Histograms',
@@ -158,6 +159,7 @@ def plot():
         </body>
         </html>
     """
+
     return html_content
 
 
