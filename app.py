@@ -69,7 +69,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/', methods=['POST'])
+@app.route('/save', methods=['POST'])
 def save_data():
     data = request.json
     new_data = HealthData(
