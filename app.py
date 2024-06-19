@@ -92,21 +92,37 @@ def plot():
     # 从数据库读取数据
     df = pd.read_sql_query('SELECT * FROM health_data', con=db.engine)
 
-    # 生成图表
-    fig = px.histogram(df, x='bmi', title='BMI Distribution')
-    fig2 = px.scatter(df, x='height', y='weight', color='gender', title='Height vs Weight')
+    # 生成身高、体重和BMI的3D图表
+    fig = go.Figure(data=[go.Scatter3d(
+        x=df['height'],
+        y=df['weight'],
+        z=df['bmi'],
+        mode='markers',
+        marker=dict(
+            size=8,
+            color=df['gender'].map({'Male': 'blue', 'Female': 'red'}),
+            opacity=0.8
+        )
+    )])
+
+    fig.update_layout(scene=dict(
+        xaxis_title='Height',
+        yaxis_title='Weight',
+        zaxis_title='BMI'
+    ))
 
     # 将图表转换为HTML
-    def fig_to_html(fig):
-        buffer = BytesIO()
-        fig.write_html(buffer, full_html=False)
-        html_str = buffer.getvalue().decode('utf8')
-        return html_str
+    bmi_3d_chart_html = fig_to_html(fig)
 
-    bmi_chart_html = fig_to_html(fig)
-    height_weight_chart_html = fig_to_html(fig2)
+    return render_template('plot.html', bmi_3d_chart_html=bmi_3d_chart_html)
 
-    return render_template('plot.html', bmi_chart_html=bmi_chart_html, height_weight_chart_html=height_weight_chart_html)
+# 将图表转换为HTML字符串
+def fig_to_html(fig):
+    buffer = BytesIO()
+    fig.write_html(buffer, full_html=False)
+    html_bytes = buffer.getvalue()
+    return html_bytes.decode('utf8')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
