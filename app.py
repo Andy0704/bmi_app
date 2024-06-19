@@ -49,7 +49,11 @@ class HealthData(db.Model):
     bmi = db.Column(db.Float, nullable=False)
 
 # Create tables based on the defined model
-db.create_all()
+#db.create_all()
+
+# Create tables within an application context
+with app.app_context():
+    db.create_all()
 
 #if request.method == 'POST':
         #height = float(request.form['height'])
