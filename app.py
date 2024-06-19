@@ -94,20 +94,55 @@ def plot():
     # Read data from database
     df = pd.read_sql_table('health_data', con=db.engine)
 
-    # Generate overlay histogram for all columns except 'id' and 'gender'
+    # Generate histogram for all columns except 'id' and 'gender'
     fig_histograms = go.Figure()
-    for col in df.columns[2:]:  # Skip 'id' and 'gender'
-        fig_histograms.add_trace(go.Histogram(x=df[col], name=col, opacity=0.5))
-
+    for col in df.columns[2:]:
+        fig_histograms.add_trace(go.Histogram(x=df[col], name=col))
     fig_histograms.update_layout(
         title_text='Health Data Histograms',
-        barmode='overlay',
-        xaxis_title='Value',
-        yaxis_title='Count'
+        barmode='overlay'
     )
 
-    # Convert figure to HTML string
-    html_content = fig_histograms.to_html(full_html=False)
+    # Generate 3D scatter plot
+    fig_3d = go.Figure(data=[go.Scatter3d(
+        x=df['height'],
+        y=df['weight'],
+        z=df['bmi'],
+        mode='markers',
+        marker=dict(size=5)
+    )])
+    fig_3d.update_layout(
+        title_text="BMI, Height, and Weight Analysis", 
+        scene=dict(
+            xaxis_title='Height (cm)', 
+            yaxis_title='Weight (kg)', 
+            zaxis_title='BMI'
+        )
+    )
+
+    # Convert figures to HTML strings
+    html_histograms = fig_histograms.to_html(full_html=False)
+    html_3d = fig_3d.to_html(full_html=False)
+    html_content = f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Health Data Analysis</title>
+    </head>
+    <body>
+        <div>
+            <h1>Health Data Histograms</h1>
+            {html_histograms}
+        </div>
+        <div>
+            <h1>BMI, Height, and Weight 3D Analysis</h1>
+            {html_3d}
+        </div>
+    </body>
+    </html>
+    '''
 
     return html_content
 
