@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Data Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .normal {
+            color: black;
+        }
+        .warning {
+            color: orange;
+        }
+        .danger {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Health Data Input</h1>
+        <form id="healthForm">
+            <label for="gender">性别</label>
+            <select id="gender" name="gender">
+                <option value="male">男</option>
+                <option value="female">女</option>
+            </select>
+            <label for="height">身高 (cm)</label>
+            <input type="number" id="height" name="height" required>
+            <label for="weight">体重 (kg)</label>
+            <input type="number" id="weight" name="weight" required>
+            <label for="hemoglobin">血红素 (g/dL)</label>
+            <input type="number" id="hemoglobin" name="hemoglobin" required>
+            <label for="rbc">红血球 (million cells/mcL)</label>
+            <input type="number" id="rbc" name="rbc" required>
+            <label for="wbc">白血球 (cells/mcL)</label>
+            <input type="number" id="wbc" name="wbc" required>
+            <label for="hct">血球容积比 (%)</label>
+            <input type="number" id="hct" name="hct" required>
+            <label for="platelets">血小板 (cells/mcL)</label>
+            <input type="number" id="platelets" name="platelets" required>
+            <label for="mcv">平均红血球容积 (fL)</label>
+            <input type="number" id="mcv" name="mcv" required>
+            <label for="mch">平均血色素蛋白 (pg)</label>
+            <input type="number" id="mch" name="mch" required>
+            <label for="mchc">平均红血球血色素浓度 (g/dL)</label>
+            <input type="number" id="mchc" name="mchc" required>
+            <label for="ast">天门冬氨酸转胺酶 (U/L)</label>
+            <input type="number" id="ast" name="ast" required>
+            <label for="alt">血清丙氨酸转胺酶 (U/L)</label>
+            <input type="number" id="alt" name="alt" required>
+            <label for="bun">血中尿素氮 (mg/dL)</label>
+            <input type="number" id="bun" name="bun" required>
+            <label for="creatinine">肌酸酐 (mg/dL)</label>
+            <input type="number" id="creatinine" name="creatinine" required>
+            <label for="cholesterol">胆固醇 (mg/dL)</label>
+            <input type="number" id="cholesterol" name="cholesterol" required>
+            <label for="triglycerides">三酸甘油脂 (mg/dL)</label>
+            <input type="number" id="triglycerides" name="triglycerides" required>
+            <label for="glucose">饭前血糖 (mg/dL)</label>
+            <input type="number" id="glucose" name="glucose" required>
+            <label for="neutrophils">嗜中性球 (%)</label>
+            <input type="number" id="neutrophils" name="neutrophils" required>
+            <label for="lymphocytes">淋巴球 (%)</label>
+            <input type="number" id="lymphocytes" name="lymphocytes" required>
+            <label for="monocytes">单核球 (%)</label>
+            <input type="number" id="monocytes" name="monocytes" required>
+            <label for="eosinophils">嗜酸性球 (%)</label>
+            <input type="number" id="eosinophils" name="eosinophils" required>
+            <label for="basophils">嗜碱性球 (%)</label>
+            <input type="number" id="basophils" name="basophils" required>
+            <button type="submit">提交</button>
+        </form>
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        document.getElementById('healthForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // 计算BMI
+            const height = parseFloat(data.height) / 100;
+            const weight = parseFloat(data.weight);
+            const bmi = weight / (height * height);
+            data.bmi = bmi;
+
+            // 分析结果
+            let resultsHTML = '<h2>分析结果</h2>';
+            resultsHTML += `<p class="${getClassByBMI(bmi)}">BMI: ${bmi.toFixed(2)}</p>`;
+
+            // 定义检查值函数
+            function checkValue(value, range, name, lowMsg, highMsg, lowAdvice, highAdvice, unit) {
+                if (value < range[0]) {
+                    resultsHTML += `<p class="danger">${name}: ${value} ${unit} (低) - ${lowMsg}, 建议: ${lowAdvice}</p>`;
+                } else if (value > range[1]) {
+                    resultsHTML += `<p class="danger">${name}: ${value} ${unit} (高) - ${highMsg}, 建议: ${highAdvice}</p>`;
+                } else {
+                    resultsHTML += `<p class="normal">${name}: ${value} ${unit} (正常)</p>`;
+                }
+            }
+
+            const gender = data.gender;
+            const hemoglobinRange = gender === 'male' ? [13.8, 17.2] : [12.1, 15.1];
+            const rbcRange = gender === 'male' ? [4.7, 6.1] : [4.2, 5.4];
+            const hctRange = gender === 'male' ? [40, 52] : [36, 48];
+            const creatinineRange = gender === 'male' ? [0.6, 1.2] : [0.5, 1.1];
+
+            // 分析每个字段
+            checkValue(parseFloat(data.hemoglobin), hemoglobinRange, '血红素', '贫血、疲倦、落发、心悸', '血液循环障碍、头晕、视力模糊、脾脏肿大', '多吃富含铁质的食物，如红肉、菠菜', '避免高铁食物，保持水分', 'g/dL');
+            checkValue(parseFloat(data.rbc), rbcRange, '红血球', '贫血、疲倦、落发、心悸', '红血球增多症', '多吃富含铁质的食物，如红肉、菠菜', '避免高铁食物，保持水分', 'million cells/mcL');
+            checkValue(parseFloat(data.wbc), [4500, 11000], '白血球', '骨髓抑制、免疫缺陷、病毒感染', '身体受感染、发炎、白血病、组织坏死', '多吃富含维生素C的食物，如橙子、草莓', '避免高糖食物，保持水分', 'cells/mcL');
+            checkValue(parseFloat(data.hct), hctRange, '血球容积比', '贫血', '脱水', '多吃富含铁质的食物，如红肉、菠菜', '多喝水，保持水分', '%');
+            checkValue(parseFloat(data.platelets), [150000, 450000], '血小板', '再生性贫血、慢性肝炎、肝硬化', '红血球增多症、慢性骨髓性白血病、骨髓纤维化、慢性感染症', '多吃富含维生素K的食物，如绿叶蔬菜', '避免高脂肪食物，保持水分', 'cells/mcL');
+            checkValue(parseFloat(data.mcv), [80, 100], '平均红血球容积', '缺铁性贫血、海洋性贫血及慢性疾病', '大细胞性贫血、巨红血球症', '多吃富含铁质和维生素B12的食物', '多吃富含叶酸的食物', 'fL');
+            checkValue(parseFloat(data.mch), [27, 31], '平均血色素蛋白', '贫血', '大细胞性贫血', '多吃富含铁质和维生素B12的食物', '多吃富含叶酸的食物', 'pg');
+            checkValue(parseFloat(data.mchc), [32, 36], '平均红血球血色素浓度', '低色素性贫血', '高色素性贫血', '多吃富含铁质和维生素B12的食物', '多吃富含叶酸的食物', 'g/dL');
+            checkValue(parseFloat(data.ast), [10, 40], '天门冬氨酸转胺酶', '肝功能障碍', '肝损伤', '避免酒精，多吃富含抗氧化剂的食物', '避免酒精，多吃富含抗氧化剂的食物', 'U/L');
+            checkValue(parseFloat(data.alt), [7, 56], '血清丙氨酸转胺酶', '肝功能障碍', '肝损伤', '避免酒精，多吃富含抗氧化剂的食物', '避免酒精，多吃富含抗氧化剂的食物', 'U/L');
+            checkValue(parseFloat(data.bun), [7, 20], '血中尿素氮', '肝功能障碍', '肾功能不全', '避免高蛋白饮食，保持水分', '避免高蛋白饮食，保持水分', 'mg/dL');
+            checkValue(parseFloat(data.creatinine), creatinineRange, '肌酸酐', '肾功能不全', '肾衰竭', '避免高蛋白饮食，保持水分', '避免高蛋白饮食，保持水分', 'mg/dL');
+            checkValue(parseFloat(data.cholesterol), [125, 200], '胆固醇', '身体虚弱、营养吸收不良', '高血压、心血管病变、心脏病及脑中风', '多吃富含健康脂肪的食物，如鳟鱼、坚果', '避免高脂肪食物，多吃水果和蔬菜', 'mg/dL');
+            checkValue(parseFloat(data.triglycerides), [50, 150], '三酸甘油脂', '甲状腺亢进、吸收不良、自体免疫疾病', '动脉粥状硬化、心脏病', '多吃富含健康脂肪的食物，如鳟鱼、坚果', '避免高脂肪食物，多吃水果和蔬菜', 'mg/dL');
+            checkValue(parseFloat(data.glucose), [70, 99], '饭前血糖', '心悸、冒冷汗、头晕、颤动、脉搏加速', '糖尿病前期、代谢症候群', '多吃含天然糖分的食物，如水果', '避免高糖食物，多吃高纤维食物', 'mg/dL');
+            checkValue(parseFloat(data.neutrophils), [40, 60], '嗜中性球', '败血症,结核,严重肺炎,肠伤寒,再生不良性贫血,急性白血病', '扁桃腺发炎,肺炎,骨髓炎,脑炎,胆囊炎,急性胃肠炎,白血病,心肌梗塞', '多吃富含维生素C的食物，如橙子、草莓', '避免高糖食物，多喝水', '%');
+            checkValue(parseFloat(data.lymphocytes), [20, 40], '淋巴球', '恶性淋巴肿,结核性淋巴结炎,癌症,白血病', '梅毒,结核,流行性耳下腺炎,百日咳,突眼性甲状腺肿', '多吃富含维生素C的食物，如橙子、草莓', '避免高糖食物，多喝水', '%');
+            checkValue(parseFloat(data.monocytes), [2, 8], '单核球', '败血病、恶性贫血', '水痘,麻疹,猩红热', '多吃富含维生素C的食物，如橙子、草莓', '避免高糖食物，多喝水', '%');
+            checkValue(parseFloat(data.eosinophils), [1, 4], '嗜酸性球', '免疫力低下', '寄生虫病,荨麻疹,药物过敏,支气管气喘,过敏性皮肤', '多吃富含维生素C的食物，如橙子、草莓', '避免过敏原食物，如海鲜', '%');
+            checkValue(parseFloat(data.basophils), [0.5, 1], '嗜碱性球', '怀孕、甲状腺功能亢进', '慢性溶血性贫血、真性红血球增多症、肾脏疾病', '多吃富含维生素C的食物，如橙子、草莓', '避免过敏原食物，如海鲜', '%');
+
+            document.getElementById('results').innerHTML = resultsHTML;
+
+            // 将数据发送到服务器保存
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+        });
+
+        function getClassByBMI(bmi) {
+            if (bmi < 18.5) return 'danger';
+            if (bmi >= 18.5 && bmi < 24) return 'normal';
+            if (bmi >= 24 && bmi < 27) return 'warning';
+            if (bmi >= 27 && bmi < 30) return 'danger';
+            if (bmi >= 30 && bmi < 35) return 'danger';
+            return 'danger';
+        }
+    </script>
+</body>
+</html>
