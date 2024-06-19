@@ -9,14 +9,8 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-# 配置数据库连接
-conn = psycopg2.connect(
-    host=os.getenv("dpg-cppa8huehbks73bueno0-a"),
-    database=os.getenv("data_record"),
-    user=os.getenv("data_record_user"),
-    password=os.getenv("XXFgzgwnpUJLUrU6SRmXLq5w08sB0TJT"),
-    port=os.getenv("5432")
-)
+DATABASE_URL = os.getenv('postgres://data_record_user:XXFgzgwnpUJLUrU6SRmXLq5w08sB0TJT@dpg-cppa8huehbks73bueno0-a/data_record')
+
 
 @app.route('/')
 def index():
