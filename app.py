@@ -31,8 +31,8 @@ def save_data():
                 gender, height, weight, hemoglobin, rbc, wbc, hct, platelets,
                 mcv, mch, mchc, ast, alt, bun, creatinine, cholesterol, triglycerides,
                 glucose, neutrophils, lymphocytes, monocytes, eosinophils, basophils, bmi
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-            (
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
             data['gender'], data['height'], data['weight'], data['hemoglobin'], data['rbc'],
             data['wbc'], data['hct'], data['platelets'], data['mcv'], data['mch'], data['mchc'],
             data['ast'], data['alt'], data['bun'], data['creatinine'], data['cholesterol'],
@@ -41,7 +41,7 @@ def save_data():
         ))
         conn.commit()
     return jsonify({"message": "Data saved successfully"}), 200
-    
+
 @app.route('/plot')
 def plot():
     # 读取数据
@@ -63,7 +63,5 @@ def plot():
 
     return render_template('plot.html', bmi_chart_html=bmi_chart_html, height_weight_chart_html=height_weight_chart_html)
 
-
 if __name__ == '__main__':
     app.run(debug=True)
-
