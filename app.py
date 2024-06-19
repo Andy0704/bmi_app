@@ -94,55 +94,71 @@ def plot():
     # Read data from database
     df = pd.read_sql_table('health_data', con=db.engine)
 
-    # Generate histogram for all columns except 'id' and 'gender'
-    fig_histograms = go.Figure()
-    for col in df.columns[2:]:
-        fig_histograms.add_trace(go.Histogram(x=df[col], name=col))
+    # Exclude 'gender' column from histograms
+    fig_histograms = make_subplots(rows=1, cols=3, subplot_titles=("Hemoglobin", "Height", "Weight"))
+
+    fig_histograms.add_trace(go.Histogram(x=df['hemoglobin'], name="Hemoglobin"), row=1, col=1)
+    fig_histograms.add_trace(go.Histogram(x=df['height'], name="Height"), row=1, col=2)
+    fig_histograms.add_trace(go.Histogram(x=df['weight'], name="Weight"), row=1, col=3)
+
     fig_histograms.update_layout(
         title_text='Health Data Histograms',
-        barmode='overlay'
+        barmode='overlay',
+        xaxis_title='Value',
+        yaxis_title='Count'
     )
 
-    # Generate 3D scatter plot
-    fig_3d = go.Figure(data=[go.Scatter3d(
+    # Create 3D scatter plot
+    fig_3d = go.Figure()
+    fig_3d.add_trace(go.Scatter3d(
         x=df['height'],
         y=df['weight'],
         z=df['bmi'],
         mode='markers',
-        marker=dict(size=5)
-    )])
+        marker=dict(
+            size=5,
+            color=df['bmi'],
+            colorscale='Viridis',
+            opacity=0.8
+        ),
+        text=df['gender'],
+        hoverinfo='text'
+    ))
+
     fig_3d.update_layout(
-        title_text="BMI, Height, and Weight Analysis", 
+        title_text="BMI, Height, and Weight Analysis",
         scene=dict(
-            xaxis_title='Height (cm)', 
-            yaxis_title='Weight (kg)', 
+            xaxis_title='Height (cm)',
+            yaxis_title='Weight (kg)',
             zaxis_title='BMI'
         )
     )
 
     # Convert figures to HTML strings
     html_histograms = fig_histograms.to_html(full_html=False)
-    html_3d = fig_3d.to_html(full_html=False)
-    html_content = f'''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Health Data Analysis</title>
-    </head>
-    <body>
-        <div>
-            <h1>Health Data Histograms</h1>
-            {html_histograms}
-        </div>
-        <div>
-            <h1>BMI, Height, and Weight 3D Analysis</h1>
-            {html_3d}
-        </div>
-    </body>
-    </html>
-    '''
+    html_3d_plot = fig_3d.to_html(full_html=False)
+
+    # Combine HTML content
+    html_content = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Health Data Analysis</title>
+        </head>
+        <body>
+            <div>
+                <h1>Health Data Histograms</h1>
+                {html_histograms}
+            </div>
+            <div>
+                <h1>BMI, Height, and Weight Analysis</h1>
+                {html_3d_plot}
+            </div>
+        </body>
+        </html>
+    """
 
     return html_content
 
