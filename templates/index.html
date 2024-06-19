@@ -117,9 +117,9 @@
             // 定义检查值函数
             function checkValue(value, range, name, lowMsg, highMsg, lowAdvice, highAdvice, unit) {
                 if (value < range[0]) {
-                    resultsHTML += `<p class="danger">${name}: ${value} ${unit} (低) - ${lowMsg}, 建议: ${lowAdvice}</p>`;
+                    resultsHTML += `<p class="danger">${name}: ${value} ${unit} (低) - ${lowMsg}, 建議: ${lowAdvice}</p>`;
                 } else if (value > range[1]) {
-                    resultsHTML += `<p class="danger">${name}: ${value} ${unit} (高) - ${highMsg}, 建议: ${highAdvice}</p>`;
+                    resultsHTML += `<p class="danger">${name}: ${value} ${unit} (高) - ${highMsg}, 建議: ${highAdvice}</p>`;
                 } else {
                     resultsHTML += `<p class="normal">${name}: ${value} ${unit} (正常)</p>`;
                 }
@@ -132,8 +132,8 @@
             const creatinineRange = gender === 'male' ? [0.6, 1.2] : [0.5, 1.1];
 
             // 分析每个字段
-            checkValue(parseFloat(data.hemoglobin), hemoglobinRange, '血红素', '贫血、疲倦、落发、心悸', '血液循环障碍、头晕、视力模糊、脾脏肿大', '多吃富含铁质的食物，如红肉、菠菜', '避免高铁食物，保持水分', 'g/dL');
-            checkValue(parseFloat(data.rbc), rbcRange, '红血球', '贫血、疲倦、落发、心悸', '红血球增多症', '多吃富含铁质的食物，如红肉、菠菜', '避免高铁食物，保持水分', 'million cells/mcL');
+            checkValue(parseFloat(data.hemoglobin), hemoglobinRange, '血红素', '貧血、疲倦、落髮、心悸', '血液循環障礙、頭暈、視力模糊、脾臟腫大', '多吃富含鐵質的食物，如红肉、菠菜', '避免高鐵食物，保持水分', 'g/dL');
+            checkValue(parseFloat(data.rbc), rbcRange, '红血球', '贫血、疲倦、落发、心悸', '红血球增多症', '多吃富含鐵质的食物，如红肉、菠菜', '避免高鐵食物，保持水分', 'million cells/mcL');
             checkValue(parseFloat(data.wbc), [4500, 11000], '白血球', '骨髓抑制、免疫缺陷、病毒感染', '身体受感染、发炎、白血病、组织坏死', '多吃富含维生素C的食物，如橙子、草莓', '避免高糖食物，保持水分', 'cells/mcL');
             checkValue(parseFloat(data.hct), hctRange, '血球容积比', '贫血', '脱水', '多吃富含铁质的食物，如红肉、菠菜', '多喝水，保持水分', '%');
             checkValue(parseFloat(data.platelets), [150000, 450000], '血小板', '再生性贫血、慢性肝炎、肝硬化', '红血球增多症、慢性骨髓性白血病、骨髓纤维化、慢性感染症', '多吃富含维生素K的食物，如绿叶蔬菜', '避免高脂肪食物，保持水分', 'cells/mcL');
