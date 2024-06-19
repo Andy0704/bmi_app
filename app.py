@@ -87,67 +87,30 @@ def save_data():
     )
     db.session.add(new_data)
     db.session.commit()
-    return jsonify({"message": "Data saved successfully"}), 200
+    return jsonify({"message": "Data saved successfully"}), 201
 
 @app.route('/plot')
 def plot():
     # Read data from database
     df = pd.read_sql_table('health_data', con=db.engine)
 
-    # Generate 3D scatter plot for height, weight, and BMI
-    fig_3d = go.Figure(data=[go.Scatter3d(
-        x=df['height'],
-        y=df['weight'],
-        z=df['bmi'],
-        mode='markers',
-        marker=dict(size=5)
-    )])
-    fig_3d.update_layout(scene=dict(
-        xaxis_title='Height',
-        yaxis_title='Weight',
-        zaxis_title='BMI'
-    ))
+    # Generate overlay histogram for all columns except 'id' and 'gender'
+    fig_histograms = go.Figure()
+    for col in df.columns[2:]:  # Skip 'id' and 'gender'
+        fig_histograms.add_trace(go.Histogram(x=df[col], name=col, opacity=0.5))
 
-    # Generate histograms for other data fields
-    hist_figs = []
-    for col in df.columns.difference(['id', 'gender', 'height', 'weight', 'bmi']):
-        fig = px.histogram(df, x=col, title=f'{col.capitalize()} Distribution')
-        hist_figs.append(fig)
+    fig_histograms.update_layout(
+        title_text='Health Data Histograms',
+        barmode='overlay',
+        xaxis_title='Value',
+        yaxis_title='Count'
+    )
 
-    # Convert figures to HTML
-    fig_3d_html = fig_3d.to_html(full_html=False)
-    hist_figs_html = [fig.to_html(full_html=False) for fig in hist_figs]
-
-    # Combine all HTML content
-    html_content = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Plot Results</title>
-    </head>
-    <body>
-        <div>
-            <h1>3D Scatter Plot (Height, Weight, BMI)</h1>
-            <div>{fig_3d_html}</div>
-        </div>
-    """
-
-    for i, fig_html in enumerate(hist_figs_html):
-        html_content += f"""
-        <div>
-            <h1>{df.columns.difference(['id', 'gender', 'height', 'weight', 'bmi'])[i].capitalize()} Distribution</h1>
-            <div>{fig_html}</div>
-        </div>
-        """
-
-    html_content += """
-    </body>
-    </html>
-    """
+    # Convert figure to HTML string
+    html_content = fig_histograms.to_html(full_html=False)
 
     return html_content
+
 
 if __name__ == '__main__':
     app.run(debug=True)
