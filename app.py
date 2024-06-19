@@ -17,6 +17,38 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
 # 配置数据库连接字符串
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# Define the database model
+class HealthData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    gender = db.Column(db.String(10), nullable=False)
+    height = db.Column(db.Float, nullable=False)
+    weight = db.Column(db.Float, nullable=False)
+    hemoglobin = db.Column(db.Float, nullable=False)
+    rbc = db.Column(db.Float, nullable=False)
+    wbc = db.Column(db.Float, nullable=False)
+    hct = db.Column(db.Float, nullable=False)
+    platelets = db.Column(db.Float, nullable=False)
+    mcv = db.Column(db.Float, nullable=False)
+    mch = db.Column(db.Float, nullable=False)
+    mchc = db.Column(db.Float, nullable=False)
+    ast = db.Column(db.Float, nullable=False)
+    alt = db.Column(db.Float, nullable=False)
+    bun = db.Column(db.Float, nullable=False)
+    creatinine = db.Column(db.Float, nullable=False)
+    cholesterol = db.Column(db.Float, nullable=False)
+    triglycerides = db.Column(db.Float, nullable=False)
+    glucose = db.Column(db.Float, nullable=False)
+    neutrophils = db.Column(db.Float, nullable=False)
+    lymphocytes = db.Column(db.Float, nullable=False)
+    monocytes = db.Column(db.Float, nullable=False)
+    eosinophils = db.Column(db.Float, nullable=False)
+    basophils = db.Column(db.Float, nullable=False)
+    bmi = db.Column(db.Float, nullable=False)
+
+# Create tables based on the defined model
+db.create_all()
 
 @app.route('/')
 def index():
@@ -25,33 +57,31 @@ def index():
 @app.route('/save', methods=['POST'])
 def save_data():
     data = request.json
-    with conn.cursor() as cursor:
-        cursor.execute("""
-            INSERT INTO health_data (
-                gender, height, weight, hemoglobin, rbc, wbc, hct, platelets,
-                mcv, mch, mchc, ast, alt, bun, creatinine, cholesterol, triglycerides,
-                glucose, neutrophils, lymphocytes, monocytes, eosinophils, basophils, bmi
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            data['gender'], data['height'], data['weight'], data['hemoglobin'], data['rbc'],
-            data['wbc'], data['hct'], data['platelets'], data['mcv'], data['mch'], data['mchc'],
-            data['ast'], data['alt'], data['bun'], data['creatinine'], data['cholesterol'],
-            data['triglycerides'], data['glucose'], data['neutrophils'], data['lymphocytes'],
-            data['monocytes'], data['eosinophils'], data['basophils'], data['bmi']
-        ))
-        conn.commit()
+    new_data = HealthData(
+        gender=data['gender'], height=data['height'], weight=data['weight'],
+        hemoglobin=data['hemoglobin'], rbc=data['rbc'], wbc=data['wbc'],
+        hct=data['hct'], platelets=data['platelets'], mcv=data['mcv'],
+        mch=data['mch'], mchc=data['mchc'], ast=data['ast'], alt=data['alt'],
+        bun=data['bun'], creatinine=data['creatinine'], cholesterol=data['cholesterol'],
+        triglycerides=data['triglycerides'], glucose=data['glucose'],
+        neutrophils=data['neutrophils'], lymphocytes=data['lymphocytes'],
+        monocytes=data['monocytes'], eosinophils=data['eosinophils'],
+        basophils=data['basophils'], bmi=data['bmi']
+    )
+    db.session.add(new_data)
+    db.session.commit()
     return jsonify({"message": "Data saved successfully"}), 200
 
 @app.route('/plot')
 def plot():
-    # 读取数据
-    df = pd.read_sql_query('SELECT * FROM health_data', conn)
+    # Read data from database
+    df = pd.read_sql_query('SELECT * FROM health_data', con=db.engine)
 
-    # 生成图表
+    # Generate charts
     fig = px.histogram(df, x='bmi', title='BMI Distribution')
     fig2 = px.scatter(df, x='height', y='weight', color='gender', title='Height vs Weight')
 
-    # 将图表转换为 HTML 内联图像
+    # Convert charts to HTML
     def fig_to_html(fig):
         buffer = BytesIO()
         fig.write_html(buffer, full_html=False)
