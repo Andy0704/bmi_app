@@ -1,8 +1,14 @@
 from flask import Flask, request, jsonify, render_template
 import psycopg2
 import os
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+import base64
+from io import BytesIO
 
 app = Flask(__name__)
+
 # 配置数据库连接
 conn = psycopg2.connect(
     host=os.getenv("dpg-cppa8huehbks73bueno0-a"),
@@ -35,6 +41,27 @@ def save_data():
         ))
         conn.commit()
     return jsonify({"message": "Data saved successfully"}), 200
+    
+@app.route('/plot')
+def plot():
+    # 读取数据
+    df = pd.read_sql_query('SELECT * FROM health_data', conn)
+
+    # 生成图表
+    fig = px.histogram(df, x='bmi', title='BMI Distribution')
+    fig2 = px.scatter(df, x='height', y='weight', color='gender', title='Height vs Weight')
+
+    # 将图表转换为 HTML 内联图像
+    def fig_to_html(fig):
+        buffer = BytesIO()
+        fig.write_html(buffer, full_html=False)
+        html_bytes = buffer.getvalue()
+        return html_bytes.decode('utf8')
+
+    bmi_chart_html = fig_to_html(fig)
+    height_weight_chart_html = fig_to_html(fig2)
+
+    return render_template('plot.html', bmi_chart_html=bmi_chart_html, height_weight_chart_html=height_weight_chart_html)
 
 
 if __name__ == '__main__':
