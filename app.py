@@ -81,7 +81,9 @@ def index():
         )
     db.session.add(new_data)
     db.session.commit()
-    return redirect(url_for('index'))
+    return jsonify({"message": "Data saved successfully"}), 200
+    #return redirect(url_for('index'))
+    
 
 
 #@app.route('/save', methods=['POST'])
