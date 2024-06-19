@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+from flask_sqlalchemy import SQLAlchemy
 import psycopg2
 import os
 import pandas as pd
@@ -8,9 +9,14 @@ import base64
 from io import BytesIO
 
 app = Flask(__name__)
-
+# 获取环境变量中的 DATABASE_URL，并确保它是以 'postgresql://' 开头
 DATABASE_URL = os.getenv('postgres://data_record_user:XXFgzgwnpUJLUrU6SRmXLq5w08sB0TJT@dpg-cppa8huehbks73bueno0-a/data_record')
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# 配置数据库连接字符串
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 @app.route('/')
 def index():
