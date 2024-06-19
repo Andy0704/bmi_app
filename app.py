@@ -64,7 +64,7 @@ with app.app_context():
         #db.session.commit()
         #return redirect(url_for('index'))
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
