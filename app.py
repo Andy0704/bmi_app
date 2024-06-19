@@ -3,14 +3,13 @@ import psycopg2
 import os
 
 app = Flask(__name__)
-
 # 配置数据库连接
 conn = psycopg2.connect(
-    host=os.getenv("DB_HOST"),
-    database=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASS"),
-    port=os.getenv("DB_PORT")
+    host=os.getenv("dpg-cppa8huehbks73bueno0-a"),
+    database=os.getenv("data_record"),
+    user=os.getenv("data_record_user"),
+    password=os.getenv("XXFgzgwnpUJLUrU6SRmXLq5w08sB0TJT"),
+    port=os.getenv("5432")
 )
 
 @app.route('/')
@@ -36,6 +35,7 @@ def save_data():
         ))
         conn.commit()
     return jsonify({"message": "Data saved successfully"}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
