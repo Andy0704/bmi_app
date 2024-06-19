@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: flask-health-app
+    name: bmi_app
     env: python
     region: oregon
     plan: free
@@ -8,12 +8,12 @@ services:
     startCommand: gunicorn app:app
     envVars:
       - key: DB_HOST
-        value: your_db_host
+        value: dpg-cppa8huehbks73bueno0-a
       - key: DB_NAME
-        value: your_db_name
+        value: data_record
       - key: DB_USER
-        value: your_db_user
+        value: data_record_user
       - key: DB_PASS
-        value: your_db_password
+        value: XXFgzgwnpUJLUrU6SRmXLq5w08sB0TJT
       - key: DB_PORT
-        value: your_db_port
+        value: 5432
