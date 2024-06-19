@@ -64,45 +64,28 @@ with app.app_context():
         #db.session.commit()
         #return redirect(url_for('index'))
 
-@app.route('/', methods=['POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        data = request.json
-        new_data = HealthData(
-            gender=data['gender'], height=data['height'], weight=data['weight'],
-            hemoglobin=data['hemoglobin'], rbc=data['rbc'], wbc=data['wbc'],
-            hct=data['hct'], platelets=data['platelets'], mcv=data['mcv'],
-            mch=data['mch'], mchc=data['mchc'], ast=data['ast'], alt=data['alt'],
-            bun=data['bun'], creatinine=data['creatinine'], cholesterol=data['cholesterol'],
-            triglycerides=data['triglycerides'], glucose=data['glucose'],
-            neutrophils=data['neutrophils'], lymphocytes=data['lymphocytes'],
-            monocytes=data['monocytes'], eosinophils=data['eosinophils'],
-            basophils=data['basophils'], bmi=data['bmi']
+    return render_template('index.html')
+
+
+@app.route('/', methods=['POST'])
+def save_data():
+    data = request.json
+    new_data = HealthData(
+        gender=data['gender'], height=data['height'], weight=data['weight'],
+        hemoglobin=data['hemoglobin'], rbc=data['rbc'], wbc=data['wbc'],
+        hct=data['hct'], platelets=data['platelets'], mcv=data['mcv'],
+        mch=data['mch'], mchc=data['mchc'], ast=data['ast'], alt=data['alt'],
+        bun=data['bun'], creatinine=data['creatinine'], cholesterol=data['cholesterol'],
+        triglycerides=data['triglycerides'], glucose=data['glucose'],
+        neutrophils=data['neutrophils'], lymphocytes=data['lymphocytes'],
+        monocytes=data['monocytes'], eosinophils=data['eosinophils'],
+        basophils=data['basophils'], bmi=data['bmi']
         )
-    db.session.add(new_data)
-    db.session.commit()
-    return jsonify({"message": "Data saved successfully"}), 200
-    #return redirect(url_for('index'))
-    
-
-
-#@app.route('/save', methods=['POST'])
-#def save_data():
-    #data = request.json
-    #new_data = HealthData(
-        #gender=data['gender'], height=data['height'], weight=data['weight'],
-        #hemoglobin=data['hemoglobin'], rbc=data['rbc'], wbc=data['wbc'],
-        #hct=data['hct'], platelets=data['platelets'], mcv=data['mcv'],
-        #mch=data['mch'], mchc=data['mchc'], ast=data['ast'], alt=data['alt'],
-        #bun=data['bun'], creatinine=data['creatinine'], cholesterol=data['cholesterol'],
-        #triglycerides=data['triglycerides'], glucose=data['glucose'],
-        #neutrophils=data['neutrophils'], lymphocytes=data['lymphocytes'],
-        #monocytes=data['monocytes'], eosinophils=data['eosinophils'],
-        #basophils=data['basophils'], bmi=data['bmi']
-    #)
-    #db.session.add(new_data)
-    #db.session.commit()
-    #return jsonify({"message": "Data saved successfully"}), 200
+        db.session.add(new_data)
+        db.session.commit()
+        return jsonify({"message": "Data saved successfully"}), 200
 
 @app.route('/plot')
 def plot():
