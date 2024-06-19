@@ -89,40 +89,63 @@ def save_data():
 
 @app.route('/plot')
 def plot():
-    # 从数据库读取数据
-    df = pd.read_sql_query('SELECT * FROM health_data', con=db.engine)
+    # Read data from database
+    df = pd.read_sql_table('health_data', con=db.engine)
 
-    # 生成身高、体重和BMI的3D图表
-    fig = go.Figure(data=[go.Scatter3d(
+    # Generate 3D scatter plot for height, weight, and BMI
+    fig_3d = go.Figure(data=[go.Scatter3d(
         x=df['height'],
         y=df['weight'],
         z=df['bmi'],
         mode='markers',
-        marker=dict(
-            size=8,
-            color=df['gender'].map({'Male': 'blue', 'Female': 'red'}),
-            opacity=0.8
-        )
+        marker=dict(size=5)
     )])
-
-    fig.update_layout(scene=dict(
+    fig_3d.update_layout(scene=dict(
         xaxis_title='Height',
         yaxis_title='Weight',
         zaxis_title='BMI'
     ))
 
-    # 将图表转换为HTML
-    bmi_3d_chart_html = fig_to_html(fig)
+    # Generate histograms for other data fields
+    hist_figs = []
+    for col in df.columns.difference(['id', 'gender', 'height', 'weight', 'bmi']):
+        fig = px.histogram(df, x=col, title=f'{col.capitalize()} Distribution')
+        hist_figs.append(fig)
 
-    return render_template('plot.html', bmi_3d_chart_html=bmi_3d_chart_html)
+    # Convert figures to HTML
+    fig_3d_html = fig_3d.to_html(full_html=False)
+    hist_figs_html = [fig.to_html(full_html=False) for fig in hist_figs]
 
-# 将图表转换为HTML字符串
-def fig_to_html(fig):
-    buffer = BytesIO()
-    fig.write_html(buffer, full_html=False)
-    html_bytes = buffer.getvalue()
-    return html_bytes.decode('utf8')
+    # Combine all HTML content
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Plot Results</title>
+    </head>
+    <body>
+        <div>
+            <h1>3D Scatter Plot (Height, Weight, BMI)</h1>
+            <div>{fig_3d_html}</div>
+        </div>
+    """
 
+    for i, fig_html in enumerate(hist_figs_html):
+        html_content += f"""
+        <div>
+            <h1>{df.columns.difference(['id', 'gender', 'height', 'weight', 'bmi'])[i].capitalize()} Distribution</h1>
+            <div>{fig_html}</div>
+        </div>
+        """
+
+    html_content += """
+    </body>
+    </html>
+    """
+
+    return html_content
 
 if __name__ == '__main__':
     app.run(debug=True)
