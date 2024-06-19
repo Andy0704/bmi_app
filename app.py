@@ -50,21 +50,15 @@ class HealthData(db.Model):
     basophils = db.Column(db.Float, nullable=False)
     bmi = db.Column(db.Float, nullable=False)
 
-# Create tables based on the defined model
-#db.create_all()
 
 # Create tables within an application context
 with app.app_context():
     db.create_all()
 
-#if request.method == 'POST':
-        #height = float(request.form['height'])
-        #weight = float(request.form['weight'])
-        #bmi = weight / (height / 100) ** 2  # 计算 BMI
-        #record = BMIRecord(height=height, weight=weight, bmi=bmi)
-        #db.session.add(record)
-        #db.session.commit()
-        #return redirect(url_for('index'))
+def calculate_bmi(height, weight):
+    height_meters = height / 100
+    bmi = weight / (height_meters ** 2)
+    return bmi
 
 @app.route('/', methods=['GET'])
 def index():
@@ -74,6 +68,7 @@ def index():
 @app.route('/save', methods=['POST'])
 def save_data():
     data = request.json
+    bmi = calculate_bmi(data['height'], data['weight'])
     new_data = HealthData(
         gender=data['gender'], height=data['height'], weight=data['weight'],
         hemoglobin=data['hemoglobin'], rbc=data['rbc'], wbc=data['wbc'],
@@ -83,7 +78,7 @@ def save_data():
         triglycerides=data['triglycerides'], glucose=data['glucose'],
         neutrophils=data['neutrophils'], lymphocytes=data['lymphocytes'],
         monocytes=data['monocytes'], eosinophils=data['eosinophils'],
-        basophils=data['basophils'], bmi=data['bmi']
+        basophils=data['basophils'], bmi=bmi
     )
     db.session.add(new_data)
     db.session.commit()
@@ -95,11 +90,14 @@ def plot():
     df = pd.read_sql_table('health_data', con=db.engine)
 
     # Exclude 'gender' column from histograms
-    fig_histograms = make_subplots(rows=1, cols=3, subplot_titles=("Hemoglobin", "Height", "Weight"))
+    fig_histograms = make_subplots(rows=3, cols=3, subplot_titles=("RBC", "WBC", "HCT", "Platelets", "MCV", "MCH", "MCHC", "AST", "ALT"))
 
-    fig_histograms.add_trace(go.Histogram(x=df['hemoglobin'], name="Hemoglobin"), row=1, col=1)
-    fig_histograms.add_trace(go.Histogram(x=df['height'], name="Height"), row=1, col=2)
-    fig_histograms.add_trace(go.Histogram(x=df['weight'], name="Weight"), row=1, col=3)
+    # Group columns by similar numerical values and create histograms
+    columns_to_plot = ['rbc', 'wbc', 'hct', 'platelets', 'mcv', 'mch', 'mchc', 'ast', 'alt']
+    for i, col in enumerate(columns_to_plot):
+        row = i // 3 + 1
+        col = i % 3 + 1
+        fig_histograms.add_trace(go.Histogram(x=df[col], name=col.capitalize()), row=row, col=col)
 
     fig_histograms.update_layout(
         title_text='Health Data Histograms',
@@ -134,11 +132,11 @@ def plot():
         )
     )
 
-    # Convert figures to HTML strings
-    html_histograms = fig_histograms.to_html(full_html=False)
-    html_3d_plot = fig_3d.to_html(full_html=False)
+    # Convert Plotly figures to div strings
+    div_histograms = fig_histograms.to_html(full_html=False)
+    div_3d_plot = fig_3d.to_html(full_html=False)
 
-    # Combine HTML content
+    # Combine Plotly divs into a single HTML content
     html_content = f"""
         <!DOCTYPE html>
         <html lang="en">
@@ -146,20 +144,20 @@ def plot():
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Health Data Analysis</title>
+            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         </head>
         <body>
             <div>
                 <h1>Health Data Histograms</h1>
-                {html_histograms}
+                {div_histograms}
             </div>
             <div>
                 <h1>BMI, Height, and Weight Analysis</h1>
-                {html_3d_plot}
+                {div_3d_plot}
             </div>
         </body>
         </html>
     """
-
     return html_content
 
 
