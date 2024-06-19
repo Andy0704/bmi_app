@@ -8,7 +8,7 @@ import plotly.io as pio
 import base64
 from io import BytesIO
 
-app = Flask(__name__)
+app = Flask(__name__,, template_folder='/template')
 # 获取环境变量中的 DATABASE_URL，并确保它是以 'postgresql://' 开头
 DATABASE_URL = os.getenv('postgres://data_record_user:XXFgzgwnpUJLUrU6SRmXLq5w08sB0TJT@dpg-cppa8huehbks73bueno0-a/data_record')
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
