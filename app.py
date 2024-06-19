@@ -1,16 +1,21 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import psycopg2
+import os
 
 app = Flask(__name__)
 
 # 配置数据库连接
 conn = psycopg2.connect(
-    host="your_host",
-    database="your_database",
-    user="your_user",
-    password="your_password",
-    port="your_port"
+    host=os.getenv("DB_HOST"),
+    database=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS"),
+    port=os.getenv("DB_PORT")
 )
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/save', methods=['POST'])
 def save_data():
@@ -21,8 +26,8 @@ def save_data():
                 gender, height, weight, hemoglobin, rbc, wbc, hct, platelets,
                 mcv, mch, mchc, ast, alt, bun, creatinine, cholesterol, triglycerides,
                 glucose, neutrophils, lymphocytes, monocytes, eosinophils, basophils, bmi
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (
             data['gender'], data['height'], data['weight'], data['hemoglobin'], data['rbc'],
             data['wbc'], data['hct'], data['platelets'], data['mcv'], data['mch'], data['mchc'],
             data['ast'], data['alt'], data['bun'], data['creatinine'], data['cholesterol'],
@@ -34,3 +39,4 @@ def save_data():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
