@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: flask-health-app
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    envVars:
+      - key: DB_HOST
+        value: your_db_host
+      - key: DB_NAME
+        value: your_db_name
+      - key: DB_USER
+        value: your_db_user
+      - key: DB_PASS
+        value: your_db_password
+      - key: DB_PORT
+        value: your_db_port
