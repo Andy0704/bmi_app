@@ -73,7 +73,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Health Data Input</h1>
+        <h1>健康檢查數據分析</h1>
         <form id="healthForm">
             <label for="gender">性别</label>
             <select id="gender" name="gender">
@@ -124,6 +124,7 @@
             <input type="number" step="any" placeholder="正常值 1-4" id="eosinophils" name="eosinophils" required>
             <label for="basophils">嗜鹼性球 (%)</label>
             <input type="number" step="any" placeholder="正常值 0.5-1" id="basophils" name="basophils" required>
+            <label>若有項目缺失則填 0</label>
             <button type="submit">提交</button>
         </form>
         <div id="results" class="results"></div>
@@ -135,7 +136,7 @@
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData.entries());
 
-            // 计算BMI
+            // 計算BMI
             const height = parseFloat(data.height) / 100;
             const weight = parseFloat(data.weight);
             const bmi = weight / (height * height);
@@ -145,7 +146,7 @@
             let resultsHTML = '<h2>分析结果</h2>';
             resultsHTML += `<p class="${getClassByBMI(bmi)}">BMI: ${bmi.toFixed(2)}</p>`;
 
-            // 定义检查值函数
+            // 定義檢查值函數
             function checkValue(value, range, name, lowMsg, highMsg, lowAdvice, highAdvice, unit) {
                 if (value < range[0]) {
                     resultsHTML += `<p class="danger">${name}: ${value} ${unit} (低) - ${lowMsg}, 建議: ${lowAdvice}</p>`;
@@ -162,7 +163,7 @@
             const hctRange = gender === 'male' ? [40, 52] : [36, 48];
             const creatinineRange = gender === 'male' ? [0.6, 1.2] : [0.5, 1.1];
 
-            // 分析每个字段
+            // 分析每個字段
             checkValue(parseFloat(data.hemoglobin), hemoglobinRange, '血紅素', '貧血、疲倦、落髮、心悸', '血液循環障礙、頭暈、視力模糊、脾臟腫大', '多吃富含鐵質的食物，如紅肉、菠菜', '避免高鐵食物，保持水分', 'g/dL');
             checkValue(parseFloat(data.rbc), rbcRange, '紅血球', '貧血、疲倦、落髮、心悸', '紅血球增多症', '多吃富含鐵質的食物，如紅肉、菠菜', '避免高鐵食物，保持水分', 'million cells/mcL');
             checkValue(parseFloat(data.wbc), [4500, 11000], '白血球', '骨髓抑制、免疫缺陷、病毒感染', '身體受感染、發炎、白血病、组織壞死', '多吃富含维生素C的食物，如橙子、草莓', '避免高糖食物，保持水分', 'cells/mcL');
@@ -186,7 +187,7 @@
 
             document.getElementById('results').innerHTML = resultsHTML;
 
-            // 将数据发送到服务器保存
+            // 將數據發送到服務器保存
             fetch('/save', {
                 method: 'POST',
                 headers: {
