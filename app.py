@@ -56,8 +56,8 @@ with app.app_context():
     db.create_all()
 
 def calculate_bmi(height, weight):
-    height_meters = height / 100
-    bmi = weight / (height_meters ** 2)
+    height_meters = (float)height / 100
+    bmi = (float)weight / (height_meters ** 2)
     return bmi
 
 @app.route('/', methods=['GET'])
