@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>健康檢查數據分析</title>
+    <title>健康管理小助手</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,7 +18,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        h1 {
+        h1, h2 {
             text-align: center;
             color: #333;
         }
@@ -57,9 +57,6 @@
             border-radius: 5px;
             background-color: #f5f5f5;
         }
-        h2 {
-            color: #333;
-        }
         .normal {
             color: green;
         }
@@ -73,8 +70,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>健康檢查數據分析</h1>
+        <h1>健康管理小助手</h1>
+
+        <!-- 健康檢查數據分析表單 -->
         <form id="healthForm">
+            <h2>健康檢查數據分析</h2>
             <label for="gender">性别</label>
             <select id="gender" name="gender">
                 <option value="male">男</option>
@@ -128,6 +128,75 @@
             <button type="submit">提交</button>
         </form>
         <div id="results" class="results"></div>
+
+        <!-- BMI與熱量計算器表單 -->
+        <h2>BMI與熱量計算器</h2>
+        <form id="calculator-form">
+            <div class="input-group">
+                <label for="calc-height">身高（公分）:</label>
+                <input type="number" id="calc-height" name="height" required>
+            </div>
+            <div class="input-group">
+                <label for="calc-weight">體重（公斤）:</label>
+                <input type="number" id="calc-weight" name="weight" required>
+            </div>
+            <div class="input-group">
+                <label for="calc-age">年齡:</label>
+                <input type="number" id="calc-age" name="age" required>
+            </div>
+            <div class="input-group">
+                <label for="calc-gender">性別:</label>
+                <select id="calc-gender" name="gender" required>
+                    <option value="male">男性</option>
+                    <option value="female">女性</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="activity">每日活動量:</label>
+                <select id="activity" name="activity" required>
+                    <option value="1.2">身體活動趨於靜態 (little or no exercise)</option>
+                    <option value="1.375">身體活動程度較低 (exercise 1-3 days/week)</option>
+                    <option value="1.55">身體活動程度適中 (exercise 3-5 days/week)</option>
+                    <option value="1.72">身體活動程度較高 (exercise 6-7 days/week)</option>
+                    <option value="1.9">身體活動程度激烈 (hard exercise or physical job)</option>
+                </select>
+            </div>
+            <button type="button" onclick="calculateBMI()">開始計算</button>
+        </form>
+        <div id="bmi-results" class="results">
+            <h2>結果:</h2>
+            <p id="bmi-result">BMI: </p>
+            <p id="ideal-weight-result">理想體重: </p>
+            <p id="bmr-result">BMR: </p>
+            <p id="tdee-result">TDEE: </p>
+        </div>
+        <!--活動量建議計算器表單-->
+        <h2>活動量建議計算器</h2>
+        <form id="exerciseForm">
+            <label for="age">年齡（請輸入數字）:</label>
+            <input type="number" id="age" name="age" min="5" max="100" required>
+
+            <label for="goal">健康目標:</label>
+            <select id="goal" name="goal" required>
+                <option value="">請選擇健康目標</option>
+                <option value="general">一般維持</option>
+                <option value="weight_loss">減重計畫</option>
+                <option value="hiit">高強度間歇訓練(HIIT)</option>
+                <option value="strength">肌力強化訓練</option>
+            </select>
+
+            <label for="activityDays">每週身體活動天數（Ex.走路到公車站、球類運動、慢跑/健走等）:</label>
+            <input type="number" id="activityDays" name="activityDays" min="0" max="7" required>
+
+            <label for="strengthDays">每週肌力訓練天數（Ex.重訓、瑜珈、攀岩等）:</label>
+            <input type="number" id="strengthDays" name="strengthDays" min="0" max="7" required>
+            
+            <button type="submit">簡易運動指南</button>
+        </form>
+        <div class="results" id="resultContainer" style="display:none;">
+            <h2>運動建議</h2>
+            <p id="exerciseRecommendation"></p>
+        </div>
     </div>
 
     <script>
@@ -191,9 +260,15 @@
             fetch('/save', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
+                    'Content-Type': 'application/json'},
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(responseData => {
+                console.log('Success:', responseData);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
             });
         });
 
@@ -205,7 +280,135 @@
             if (bmi >= 30 && bmi < 35) return 'danger';
             return 'danger';
         }
+
+        function calculateBMI() {
+            const height = parseFloat(document.getElementById('calc-height').value) / 100; // 轉換為公尺
+            const weight = parseFloat(document.getElementById('calc-weight').value);
+            const age = parseInt(document.getElementById('calc-age').value);
+            const gender = document.getElementById('calc-gender').value;
+            const activityLevel = parseFloat(document.getElementById('activity').value);
+
+            // 計算理想體重範圍
+            function calculateIdealWeight(height) {
+                const minWeight = 18.5 * height * height;
+                const maxWeight = 24.9 * height * height;
+                return `${minWeight.toFixed(2)} - ${maxWeight.toFixed(2)} 公斤`;
+            }
+
+            // 計算基礎代謝率（BMR）
+            function calculateBMR(weight, height, age, gender) {
+                let bmr = 0;
+                if (gender === 'male') {
+                    bmr = 66.47 + (13.75 * weight) + (5.003 * height * 100) - (6.755 * age);
+                } else if (gender === 'female') {
+                    bmr = 655.1 + (9.563 * weight) + (1.85 * height * 100) - (4.676 * age);
+                }
+                return bmr;
+            }
+
+            // 計算每日總消耗熱量（TDEE）
+            function calculateTDEE(weight, height, age, gender, activityLevel) {
+                const bmr = calculateBMR(weight, height, age, gender);
+                const caloriesNeeded = bmr * activityLevel;
+                return caloriesNeeded;
+            }
+
+            // 計算BMI並顯示結果
+            const bmi = weight / (height * height);
+            document.getElementById('bmi-result').textContent = `BMI: ${bmi.toFixed(2)}`;
+
+            // 計算並顯示理想體重範圍
+            const idealWeightRange = calculateIdealWeight(height);
+            document.getElementById('ideal-weight-result').textContent = `理想體重: ${idealWeightRange}`;
+
+            // 計算並顯示BMR和TDEE
+            const bmr = calculateBMR(weight, height, age, gender);
+            const tdee = calculateTDEE(weight, height, age, gender, activityLevel);
+            document.getElementById('bmr-result').textContent = `BMR: ${bmr.toFixed(2)} 卡`;
+            document.getElementById('tdee-result').textContent = `TDEE: ${tdee.toFixed(0)} 卡`;
+        }
+
+
+
+        // 給運動量建議
+        document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('exerciseForm');
+    
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+        
+            var age = parseInt(document.getElementById('age').value);
+            var goal = document.getElementById('goal').value;
+            var activityDays = parseInt(document.getElementById('activityDays').value);
+            var strengthDays = parseInt(document.getElementById('strengthDays').value);
+        
+            var recommendation = generateExerciseRecommendation({ age, goal, activityDays, strengthDays });
+            document.getElementById('exerciseRecommendation').textContent = recommendation;
+            document.getElementById('resultContainer').style.display = 'block';
+            });
+        });
+
+        function generateExerciseRecommendation(data) {
+        var { age, goal, activityDays, strengthDays } = data;
+        var recommendation = "";
+
+        if (age >= 5 && age <= 17) {
+            if (goal === "general") {
+                recommendation = getRecommendation(activityDays, strengthDays, "有氧運動", "肌力訓練");
+            } else if (goal === "weight_loss") {
+                recommendation = getRecommendation(activityDays, strengthDays, "有氧運動", "肌力訓練");
+            } else if (goal === "hiit") {
+                recommendation = getRecommendation(activityDays, strengthDays, "間歇訓練", "肌力訓練");
+            } else if (goal === "strength") {
+                recommendation = getRecommendation(activityDays, strengthDays, "有氧運動及肌力訓練", "肌力訓練");
+            }
+        } else if (age >= 18 && age <= 64) {
+            if (goal === "general") {
+                recommendation = getRecommendation(activityDays, strengthDays, "中等強度有氧運動", "肌力訓練");
+            } else if (goal === "weight_loss") {
+                recommendation = getRecommendation(activityDays, strengthDays, "中高強度有氧運動", "肌力訓練");
+            } else if (goal === "hiit") {
+                recommendation = getRecommendation(activityDays, strengthDays, "高強度間歇訓練", "肌力訓練");
+            } else if (goal === "strength") {
+                recommendation = getRecommendation(activityDays, strengthDays, "有氧運動及肌力訓練", "肌力訓練");
+            }
+        } else if (age >= 65) {
+            if (goal === "general") {
+                recommendation = getRecommendation(activityDays, strengthDays, "輕度活動", "適當的肌力訓練");
+            } else if (goal === "weight_loss") {
+                recommendation = getRecommendation(activityDays, strengthDays, "中強度有氧運動", "肌力訓練");
+            } else if (goal === "hiit") {
+                recommendation = getRecommendation(activityDays, strengthDays, "高強度間歇訓練", "肌力訓練");
+            } else if (goal === "strength") {
+                recommendation = getRecommendation(activityDays, strengthDays, "有氧運動及肌力訓練", "肌力訓練");
+            }
+        }
+        return recommendation;
+        }
+
+        function getRecommendation(activityDays, strengthDays, aerobicText, strengthText) {
+        var recommendation = "";
+    
+        if (activityDays >= 0 && activityDays <= 2) {
+            recommendation = `逐步增加至每週3天，每次至少20-30分鐘的${aerobicText}。`;
+        } else if (activityDays >= 3 && activityDays <= 4) {
+            recommendation = `保持每週3-4天的活動，逐步增加每次活動時間至30-45分鐘。`;
+        } else if (activityDays >= 5 && activityDays <= 7) {
+            recommendation = `保持每週5-7天的活動，每週150-300分鐘的${aerobicText}。`;
+        }
+
+        if (strengthDays === 0) {
+            recommendation += `逐步增加至每週2天，進行${strengthText}。`;
+        } else if (strengthDays === 1) {
+            recommendation += `逐步增加至每週2天肌力訓練。`;
+        } else if (strengthDays >= 2) {
+            recommendation += `保持每週至少2天的${strengthText}。`;
+        }
+
+        return recommendation;
+        }
     </script>
 </body>
 </html>
+
 
